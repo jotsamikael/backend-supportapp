@@ -1,6 +1,7 @@
 package com.example.backendsupportapp.Service.Impl;
 
 
+import com.example.backendsupportapp.Service.LoginAttemptService;
 import com.example.backendsupportapp.Service.UserService;
 import com.example.backendsupportapp.domain.User;
 import com.example.backendsupportapp.domain.UserPrincipal;
@@ -40,39 +41,32 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private BCryptPasswordEncoder passwordEncoder;
 
+    private LoginAttemptService loginAttemptService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, LoginAttemptService loginAttemptService) {
         this.passwordEncoder = passwordEncoder;
 
         this.userRepository = userRepository;
+        this.loginAttemptService = loginAttemptService;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-     User user = userRepository.findUserByUserName(username);
-
-
-
-
-
-     if(user == null){
-         LOGGER.error("User not found by username: "+username);
-
-         throw new UsernameNotFoundException("User not found by username: "+username);
-     } else{
-         user.setLastLoginDateDisplay(user.getLastLoginDate());
-         user.setLastLoginDate(new Date());
-         userRepository.save(user);
-         UserPrincipal userPrincipal = new UserPrincipal(user);
-         LOGGER.info("Returning found user by username: "+username);
-
-         return userPrincipal;
-
-     }
+        User user = userRepository.findUserByUserName(username);
+        if (user == null) {
+            LOGGER.error(NO_USER_FOUND_BY_USERNAME + username);
+            throw new UsernameNotFoundException(NO_USER_FOUND_BY_USERNAME + username);
+        } else {
+            validateLoginAttempt(user);
+            user.setLastLoginDateDisplay(user.getLastLoginDate());
+            user.setLastLoginDate(new Date());
+            userRepository.save(user);
+            UserPrincipal userPrincipal = new UserPrincipal(user);
+            LOGGER.info(FOUND_USER_BY_USERNAME + username);
+            return userPrincipal;
+        }
     }
-
 
     @Override
     public User register(String firstName, String lastName, String userName, String email) throws UserNotFoundException, UserNameExistException, EmailExistException {
@@ -176,5 +170,19 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             return null;
         }
     }
+
+
+    private void validateLoginAttempt(User user) {
+        if(user.isNotLocked()) {
+            if(loginAttemptService.hasExceededMaxAttempts(user.getUserName())) {
+                user.setNotLocked(false);
+            } else {
+                user.setNotLocked(true);
+            }
+        } else {
+            loginAttemptService.evictUserFromLoginAttemptCache(user.getUserName());
+        }
+    }
+
 
 }
