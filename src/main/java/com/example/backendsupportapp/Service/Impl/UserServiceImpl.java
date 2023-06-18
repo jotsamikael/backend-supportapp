@@ -1,6 +1,7 @@
 package com.example.backendsupportapp.Service.Impl;
 
 
+import com.example.backendsupportapp.Service.EmailService;
 import com.example.backendsupportapp.Service.LoginAttemptService;
 import com.example.backendsupportapp.Service.UserService;
 import com.example.backendsupportapp.domain.User;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import com.example.backendsupportapp.enumeration.Role;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.mail.MessagingException;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
@@ -42,13 +44,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private BCryptPasswordEncoder passwordEncoder;
 
     private LoginAttemptService loginAttemptService;
+    private EmailService emailService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, LoginAttemptService loginAttemptService) {
+    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, LoginAttemptService loginAttemptService, EmailService emailService) {
         this.passwordEncoder = passwordEncoder;
 
         this.userRepository = userRepository;
         this.loginAttemptService = loginAttemptService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -69,7 +73,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User register(String firstName, String lastName, String userName, String email) throws UserNotFoundException, UserNameExistException, EmailExistException {
+    public User register(String firstName, String lastName, String userName, String email) throws UserNotFoundException, UserNameExistException, EmailExistException, MessagingException {
 
      validateNewUserNameAndEmail(StringUtils.EMPTY, userName, email);
      User user = new User();
@@ -92,10 +96,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setAuthorities(ROLE_USER.getAuthorities());
 
         System.out.println("touched3");
-        //user.setProfileImageUrl(getTemporaryProfileImageUrl(userName));
-        user.setProfileImageUrl("http://www.google.com/dog");
-        userRepository.save(user);
+        user.setProfileImageUrl(getTemporaryProfileImageUrl(userName));
+        //user.setProfileImageUrl("http://www.google.com/dog");
+
         LOGGER.info("New user password: " + password);
+        emailService.sendNewPasswordEmail(firstName,password, email);
+
+        // TODO: 18/06/2023  send email with password
+
+        userRepository.save(user);
+
+
+
 
         return user;
     }
