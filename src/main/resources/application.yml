@@ -1,0 +1,25 @@
+jwt:
+  secret: 'NothingHappensInContradictionToNatureOnlyInContradictionToWhatWeThinkWeKnowAboutNature'
+
+
+server:
+  port: 8095
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/supportapp
+    password:
+    username: root
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+
+#Throw exception if no handler is found
+#  mvc:
+#    throw-exception-if-no-handler-found: true
+#  resources:
+#    add-mappings: false
