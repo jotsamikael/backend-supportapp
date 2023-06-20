@@ -2,10 +2,7 @@ package com.example.backendsupportapp.exception;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.example.backendsupportapp.domain.HttpResponse;
-import com.example.backendsupportapp.exception.domain.EmailExistException;
-import com.example.backendsupportapp.exception.domain.EmailNotFoundException;
-import com.example.backendsupportapp.exception.domain.UserNameExistException;
-import com.example.backendsupportapp.exception.domain.UserNotFoundException;
+import com.example.backendsupportapp.exception.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -25,6 +22,8 @@ import javax.persistence.NoResultException;
 import java.io.IOException;
 import java.util.Objects;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+
 
 @RestControllerAdvice
 public class ExceptionHandling  implements ErrorController{
@@ -42,12 +41,12 @@ public class ExceptionHandling  implements ErrorController{
 
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<HttpResponse> accountDisabledException() {
-        return createHttpResponse(HttpStatus.BAD_REQUEST, ACCOUNT_DISABLED);
+        return createHttpResponse(BAD_REQUEST, ACCOUNT_DISABLED);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<HttpResponse> badCredentialsException() {
-        return createHttpResponse(HttpStatus.BAD_REQUEST, INCORRECT_CREDENTIALS);
+        return createHttpResponse(BAD_REQUEST, INCORRECT_CREDENTIALS);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -67,22 +66,22 @@ public class ExceptionHandling  implements ErrorController{
 
     @ExceptionHandler(EmailExistException.class)
     public ResponseEntity<HttpResponse> emailExistException(EmailExistException exception) {
-        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(UserNameExistException.class)
     public ResponseEntity<HttpResponse> usernameExistException(UserNameExistException exception) {
-        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(EmailNotFoundException.class)
     public ResponseEntity<HttpResponse> emailNotFoundException(EmailNotFoundException exception) {
-        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<HttpResponse> userNotFoundException(UserNotFoundException exception) {
-        return createHttpResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, exception.getMessage());
     }
 
 //    @ExceptionHandler(NoHandlerFoundException.class)
@@ -118,6 +117,13 @@ public class ExceptionHandling  implements ErrorController{
         LOGGER.error(exception.getMessage());
         return createHttpResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
+
+    @ExceptionHandler(NotAnImageFileException.class)
+    public ResponseEntity<HttpResponse> notAnImageFileException(NotAnImageFileException exception) {
+        LOGGER.error(exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, exception.getMessage());
+    }
+
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<HttpResponse> iOException(IOException exception) {

@@ -26,7 +26,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true) //allows you to define secury configs at method level
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private JwtAuthorizationFilter jwtAuthorizationFilter;

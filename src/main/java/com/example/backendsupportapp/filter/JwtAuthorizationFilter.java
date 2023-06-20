@@ -36,20 +36,29 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
            String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
            if(authorizationHeader == null || !authorizationHeader.startsWith(SecurityConstant.TOKEN_PREFIX)){
-              filterChain.doFilter(request, response);
+               System.out.println("Auth header is null or doesn't start with bearer");
+
+               filterChain.doFilter(request, response);
               return;
            }
 
            String token = authorizationHeader.substring(SecurityConstant.TOKEN_PREFIX.length());
+           System.out.println(token);
            String username = jwtTokenProvider.getSubject(token);
+           System.out.println(username);
+           System.out.println(jwtTokenProvider.isTokenValid(username, token));
+           System.out.println(SecurityContextHolder.getContext().getAuthentication() == null);
            if(jwtTokenProvider.isTokenValid(username, token) && SecurityContextHolder.getContext().getAuthentication() == null){
                List<GrantedAuthority> authorities = jwtTokenProvider.getAuthorities(token);
 
                Authentication authentication =  jwtTokenProvider.getAuthentication(username, authorities, request);
                SecurityContextHolder.getContext().setAuthentication(authentication);
+               System.out.println("condition1");
 
            } else{
                SecurityContextHolder.clearContext();
+               System.out.println("condition2");
+
            }
        }
        filterChain.doFilter(request, response);
